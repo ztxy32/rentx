@@ -1,64 +1,104 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { Acessory } from "../../Components/Acessory";
 import { BackButton } from "../../Components/BackButton";
 import { ImageSlider } from "../../Components/ImageSlider";
-import { Container, Header, CarImages, Content, Details, Description, Brand, CarName, Rent, Period, Price, About, Acessories, Footer} from "./style";
-
-import SpeedSvg from "../../assets/speed.svg";
-import AccelerationSvg from "../../assets/acceleration.svg";
-import ForceSvg from "../../assets/force.svg";
-import GasolineSvg from "../../assets/gasoline.svg";
-import ExchangeSvg from "../../assets/exchange.svg";
-import PeopleSvg from "../../assets/people.svg";
-import EnergySvg from "../../assets/energy.svg";
+import { Container, Header, CarImages, Details, Description, Brand, CarName, Rent, Period, Price, About, Acessories, Footer} from "./style";
 import { Button } from "../../Components/Button";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { CarDTO } from "../../dtos/CarDTO";
+import { getAccessoriesIcon } from "../../utils/getAccessoriesIcon";
+import Animated, { Extrapolate, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
+import { getStatusBarHeight } from "react-native-status-bar-height";
+import { useTheme } from "styled-components";
+
+
+interface paramentros {
+    car: CarDTO;
+}
 
 export function CarDetails(){
+    const theme = useTheme();
     const navigation = useNavigation();
+    const route = useRoute();
+    const { car } = route.params as paramentros;
+    const scrollY = useSharedValue(0);
+    const scrollHandler = useAnimatedScrollHandler(event => {
+        scrollY.value = event.contentOffset.y
+    })
+    const headerStyleAnimation = useAnimatedStyle(() => {
+        return{
+            height: interpolate(
+                scrollY.value,
+                [0, 200], [200, 70],
+                Extrapolate.CLAMP
+            )
+        }
+    });
+    const carsSliderStyleAnimation = useAnimatedStyle(() => {
+        return{
+            opacity: interpolate(
+                scrollY.value,
+                [0, 150], [1, 0],
+                Extrapolate.CLAMP
+            )
+        }
+    })
 
     function handleConfirmRent(){
-        navigation.navigate("Scheduling");
+        navigation.navigate("Scheduling", {car});
+    }
+    function handleGoBack(){
+        navigation.goBack();
     }
 
     return(
         <Container>
-            <Header>
-                <BackButton onPress={() => {}}/>
-            </Header>
-            <CarImages>
-                <ImageSlider imageUrl={["https://www.pngmart.com/files/21/Red-Tesla-Car-PNG-Photos.png"]}/>
-            </CarImages>
-
-            <Content>
+            <Animated.View style={[headerStyleAnimation, style.header, {backgroundColor: theme.colors.background_secondary}]}>
+                <Header>
+                    <BackButton onPress={handleGoBack} />
+                </Header>
+                <Animated.View style={carsSliderStyleAnimation}>
+                    <CarImages>
+                        <ImageSlider imageUrl={car.photos}/>
+                    </CarImages>
+                </Animated.View>
+            </Animated.View>
+            <Animated.ScrollView 
+                contentContainerStyle={{
+                    paddingHorizontal: 24,
+                    paddingTop: getStatusBarHeight()+160,
+                    
+                }} 
+                showsVerticalScrollIndicator={false}
+                onScroll={scrollHandler}
+                scrollEventThrottle={17}
+            >
                 <Details>
                     <Description>
-                        <Brand>Tesla</Brand>
-                        <CarName>Model S</CarName>
+                        <Brand>{car.brand}</Brand>
+                        <CarName>{car.name}</CarName>
                     </Description>
 
                     <Rent>
-                        <Period>Ao dia</Period>
-                        <Price>R$ 580</Price>
+                        <Period>{car.rent.period}</Period>
+                        <Price>R$ {car.rent.price}</Price>
                     </Rent>
                 </Details>
                 <Acessories>
-                    <Acessory name="250km/h" icon={SpeedSvg}/>
-                    <Acessory name="1.99s" icon={AccelerationSvg}/>
-                    <Acessory name="1020" icon={ForceSvg}/>
-                    <Acessory name="Eletrico" icon={EnergySvg}/>
-                    <Acessory name="Auto" icon={ExchangeSvg}/>
-                    <Acessory name="2 pessoas" icon={PeopleSvg}/>
+                    {
+                        car.accessories.map(acessory => (
+                            <Acessory
+                                key={acessory.type}
+                                name={acessory.name}
+                                icon={getAccessoriesIcon(acessory.type)}
+                            />
+                        ))
+                    }
                 </Acessories>
-                <About>
-                    Model S is built from the ground up as an electric vehicle,
-                    with a high-strength architecture and floor-mounted battery 
-                    pack for incredible occupant protection and low rollover risk. 
-                    Every Model S includes Tesla's latest active safety features, 
-                    such as Automatic Emergency Braking, at no extra cost.
-                </About>
+                <About>{car.about}</About>
                 
-            </Content>
+                </Animated.ScrollView>
             <Footer>
                 <Button title="Escolher período do aluguel" onPress={handleConfirmRent} />
             </Footer>
@@ -66,3 +106,12 @@ export function CarDetails(){
         </Container>
     );
 }
+
+
+const style = StyleSheet.create({
+    header: {
+        position: "absolute",
+        overflow: "hidden",
+        zIndex: 1,
+    },
+})

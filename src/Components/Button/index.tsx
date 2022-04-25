@@ -13,7 +13,11 @@ interface Props{
 export function Button({title, color, onPress}:Props){
     const theme = useTheme();
     return(
-        <Container color={color ? color : theme.colors.main} onPress={onPress} activeOpacity={.7}>
+        <Container 
+            color={color ? color : theme.colors.main} 
+            onPress={onPress} 
+            activeOpacity={.7}
+        >
             <Title>{title}</Title>
         </Container>
     );

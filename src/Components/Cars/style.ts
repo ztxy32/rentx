@@ -12,6 +12,7 @@ export const Container = styled(TouchableOpacity)`
     align-items: center;
     padding: 24px;
     margin-bottom: 16px;
+    border-radius: ${RFValue(10)}px ;
 `;
 export const Details = styled.View`
 
