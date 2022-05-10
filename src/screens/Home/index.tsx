@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { BackHandler, StyleSheet, TouchableOpacity } from "react-native";
 import { StatusBar } from "react-native";
 import Logo from "../../assets/logo.svg";
 import {RFValue} from "react-native-responsive-fontsize"
@@ -62,7 +62,10 @@ export function Home(){
             }
         }
         fetchCars();
-    }, [])
+    }, []);
+    useEffect(() => {
+        BackHandler.addEventListener("hardwareBackPress", () => {return true;})
+    })
     
     return(
         
@@ -71,9 +74,12 @@ export function Home(){
             <Header>
                 <HeaderContent>
                     <Logo width={RFValue(108)} height={RFValue(12)}/>
+                    {!isLoading &&
                     <TotalCars>
                         Total de {cars.length} carros
                     </TotalCars>
+                    }
+                    
                 </HeaderContent>
             </Header>
             {isLoading ? <Load/> : 
