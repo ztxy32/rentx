@@ -7,6 +7,7 @@ import { BackButton } from "../../../Components/BackButton";
 import { Bullet } from "../../../Components/Bullet";
 import { Button } from "../../../Components/Button";
 import { PasswordInput } from "../../../Components/PasswordInput";
+import api from "../../../services/api";
 import { Container, Header, Steps, Title, SubTitle, Form, FormTitle } from "./style";
 
 interface Params{
@@ -31,18 +32,27 @@ export function SecondStep(){
     function handleGoBack(){
         navigation.goBack();
     }
-    function handleRegister(){
+    async function handleRegister(){
         if(!password || !passwordConfirm){
             return Alert.alert("Preencha os campos de senha")
         }else if(password != passwordConfirm){
             return Alert.alert("As senhas não coincidem")
         }
 
-        navigation.navigate("Confirmation", {
-            title: "Conta criada!",
-            message: `Agora é só fazer login\ne aproveitar`,
-            nextScreen: "SignIn",
-        });
+        await api.post("/users",{
+            name: user.name,
+            email: user.email,
+            driver_license: user.driveLicense,
+            password
+        }).then(() => {
+            navigation.navigate("Confirmation", {
+                title: "Conta criada!",
+                message: `Agora é só fazer login\ne aproveitar`,
+                nextScreen: "SignIn",
+            });
+        }).catch(() => {
+            Alert.alert("Opa!", "não foi possível fazer o cadastro.")
+        })
     }
     return(
         <KeyboardAvoidingView behavior="position" enabled>
