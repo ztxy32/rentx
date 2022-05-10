@@ -14,6 +14,7 @@ import {
 import AppLoading from 'expo-app-loading';
 import theme from './src/style/theme';
 import { Routes } from "./src/Routes";
+import { AppProvider } from "./src/Hooks";
 
 
 export default function App() {
@@ -27,7 +28,9 @@ export default function App() {
 	return (
 		<>
 			<ThemeProvider theme={theme}>
-				<Routes/>
+				<AppProvider>
+					<Routes/>
+				</AppProvider>
 			</ThemeProvider>
 		</>
 	);
